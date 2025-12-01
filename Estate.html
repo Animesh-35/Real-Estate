@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PrimeEstate – Real Estate Listings</title>
+  <style>
+    :root{
+      --bg:#f5f7fa;
+      --primary:#1a73e8;
+      --text:#222;
+      --muted:#666;
+      --card:#fff;
+      --radius:10px;
+      font-family:Inter,Arial;
+    }
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+    }
+    header{
+      background:var(--primary);
+      color:#fff; padding:16px 28px;
+      display:flex;justify-content:space-between;align-items:center;
+    }
+    nav a{color:#fff;text-decoration:none;margin-left:16px;font-weight:600;}
+    .container{max-width:1200px;margin:20px auto;padding:0 16px;}
+
+    /* Search */
+    .search-box{
+      background:var(--card);padding:18px;border-radius:var(--radius);
+      box-shadow:0 3px 10px rgba(0,0,0,0.08);
+      display:flex;gap:12px;flex-wrap:wrap;
+    }
+    select,input{
+      padding:10px;border-radius:6px;border:1px solid #ccc;flex:1;
+    }
+    button{
+      background:var(--primary);color:#fff;border:none;padding:12px 18px;
+      border-radius:6px;font-weight:700;cursor:pointer;
+    }
+
+    /* Grid */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:20px;}
+    .card{
+      background:var(--card);border-radius:var(--radius);
+      box-shadow:0 3px 10px rgba(0,0,0,0.08);
+      overflow:hidden;
+    }
+    .card img{width:100%;height:180px;object-fit:cover;}
+    .card-body{padding:14px;}
+    .price{font-size:22px;font-weight:800;color:var(--primary);} 
+    .location{color:var(--muted);font-size:14px;margin-bottom:6px;}
+
+    /* Inquiry form */
+    .form-box{
+      margin-top:30px;background:var(--card);padding:20px;border-radius:var(--radius);
+      box-shadow:0 3px 10px rgba(0,0,0,0.08);
+    }
+    textarea{width:100%;padding:10px;border-radius:6px;border:1px solid #ccc;min-height:100px;}
+
+    footer{
+      margin-top:40px;padding:18px;text-align:center;background:#222;color:#eee;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>PrimeEstate</h2>
+    <nav>
+      <a href="#listings">Listings</a>
+      <a href="#contact">Contact</a>
+      <a href="#inquiry">Inquiry</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h2>Search Properties</h2>
+    <div class="search-box">
+      <select id="type">
+        <option value="">Property Type</option>
+        <option>Apartment</option>
+        <option>Villa</option>
+        <option>Plot</option>
+      </select>
+      <select id="city">
+        <option value="">City</option>
+        <option>Mumbai</option>
+        <option>Delhi</option>
+        <option>Bangalore</option>
+      </select>
+      <select id="budget">
+        <option value="">Budget</option>
+        <option>Under ₹50L</option>
+        <option>₹50L – ₹1Cr</option>
+        <option>₹1Cr+</option>
+      </select>
+      <button onclick="applyFilter()">Search</button>
+    </div>
+
+    <h2 style="margin-top:30px" id="listings">Featured Listings</h2>
+    <div class="grid" id="propertyGrid">
+      <!-- Properties will be inserted by JS -->
+    </div>
+
+    <!-- Inquiry Form -->
+    <h2 id="inquiry" style="margin-top:32px">Send an Inquiry</h2>
+    <div class="form-box">
+      <form onsubmit="event.preventDefault(); alert('Inquiry Submitted!');">
+        <label>Name</label><br>
+        <input required type="text" style="width:100%;margin-bottom:10px" /><br>
+
+        <label>Email</label><br>
+        <input required type="email" style="width:100%;margin-bottom:10px" /><br>
+
+        <label>Message</label><br>
+        <textarea required placeholder="Tell us about your requirement..."></textarea><br><br>
+
+        <button type="submit">Submit Inquiry</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 PrimeEstate • All Rights Reserved
+  </footer>
+
+  <script>
+    const properties = [
+      {img:"https://picsum.photos/500/300?1", price:"₹82,00,000", type:"Apartment", city:"Mumbai", title:"2 BHK Sea View Apartment", location:"Bandra West, Mumbai"},
+      {img:"https://picsum.photos/500/300?2", price:"₹1,45,00,000", type:"Villa", city:"Delhi", title:"Luxurious 4BHK Villa", location:"Greater Kailash, Delhi"},
+      {img:"https://picsum.photos/500/300?3", price:"₹38,00,000", type:"Apartment", city:"Bangalore", title:"1 BHK Budget Flat", location:"HSR Layout, Bangalore"},
+      {img:"https://picsum.photos/500/300?4", price:"₹3,20,00,000", type:"Villa", city:"Mumbai", title:"5BHK Premium Villa", location:"Juhu, Mumbai"}
+    ];
+
+    function render(list){
+      const grid = document.getElementById('propertyGrid');
+      grid.innerHTML = list.map(p => `
+        <div class="card">
+          <img src="${p.img}" alt="property">
+          <div class="card-body">
+            <div class="price">${p.price}</div>
+            <div class="location">${p.location}</div>
+            <div><strong>${p.title}</strong></div>
+            <div class="muted">${p.type} • ${p.city}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function applyFilter(){
+      const t=document.getElementById('type').value;
+      const c=document.getElementById('city').value;
+      const b=document.getElementById('budget').value;
+
+      let filtered = properties.filter(p =>(
+        (!t || p.type===t) &&
+        (!c || p.city===c) &&
+        (!b || matchBudget(p.price,b))
+      ));
+      render(filtered);
+    }
+
+    function matchBudget(price,budget){
+      const val = parseInt(price.replace(/₹|,|,/g,''));
+      if(budget==="Under ₹50L") return val < 5000000;
+      if(budget==="₹50L – ₹1Cr") return val >= 5000000 && val <= 10000000;
+      if(budget==="₹1Cr+") return val > 10000000;
+      return true;
+    }
+
+    render(properties);
+  </script>
+</body>
+</html>
